@@ -271,7 +271,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
         className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-[7vh] pb-[14vh] text-center md:pt-[8vh] md:pb-[16vh]"
       >
         {/* TOP: Ascension Center + tagline — nudged slightly left to balance with the building shot */}
-        <div className="flex flex-col items-center -translate-x-[3vw] md:-translate-x-[4vw]">
+        <div className="flex flex-col items-center -translate-x-[1.5vw] md:-translate-x-[2vw]">
           <span className="intro-mark wordmark text-[clamp(0.7rem,1vw,0.85rem)] text-cream">
             Ascension Center
           </span>
