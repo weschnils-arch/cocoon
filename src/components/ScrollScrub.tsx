@@ -27,33 +27,29 @@ export default function ScrollScrub({ totalFrames }: Props) {
   const [loaded, setLoaded] = useState(0);
   const [ready, setReady] = useState(false);
 
-  // Progressive preload — start the experience once a critical batch is loaded,
-  // continue streaming the rest in the background.
+  // Progressive preload — uses img.decode() so frames are GPU-ready before counted as loaded.
+  // Prevents flicker during scroll because draw() never has to wait on a decode.
   useEffect(() => {
     let cancelled = false;
     const imgs: HTMLImageElement[] = [];
     let done = 0;
-    // Show experience once 22% of frames are ready (covers intro + start of journey).
-    // The drawFrame() guard skips missing frames, so the user can scroll into not-yet-loaded
-    // territory and it just holds the last drawn frame until the target arrives.
     const readyThreshold = Math.max(60, Math.ceil(totalFrames * 0.22));
 
     for (let i = 1; i <= totalFrames; i++) {
       const img = new Image();
       img.src = framePath(i);
-      img.onload = () => {
-        done += 1;
-        if (cancelled) return;
-        setLoaded(done);
-        if (done >= readyThreshold) setReady(true);
-      };
-      img.onerror = () => {
-        done += 1;
-        if (!cancelled) {
+      // decode() guarantees the image is fully decoded to memory before resolving.
+      // Critical for AVIF + canvas scrubbing — onload alone fires earlier and the first
+      // drawImage call would otherwise trigger a synchronous decode = flicker.
+      img
+        .decode()
+        .catch(() => {})
+        .finally(() => {
+          done += 1;
+          if (cancelled) return;
           setLoaded(done);
           if (done >= readyThreshold) setReady(true);
-        }
-      };
+        });
       imgs.push(img);
     }
     imagesRef.current = imgs;
@@ -112,8 +108,25 @@ export default function ScrollScrub({ totalFrames }: Props) {
     ctx.globalAlpha = 1;
   };
 
-  // Single-frame draw — no crossfade (avoids motion-blur double-exposure).
-  // Smoothness comes from Lenis + GSAP scrub damping.
+  // Find the nearest LOADED frame to a target index — falls back during progressive load.
+  const nearestReady = (target: number): HTMLImageElement | null => {
+    const imgs = imagesRef.current;
+    const n = imgs.length;
+    if (n === 0) return null;
+    const t = Math.max(0, Math.min(n - 1, target));
+    if (imgs[t]?.complete && imgs[t].naturalWidth > 0) return imgs[t];
+    // Spiral out from target — first hit wins
+    for (let d = 1; d < n; d++) {
+      const lo = t - d;
+      const hi = t + d;
+      if (lo >= 0 && imgs[lo]?.complete && imgs[lo].naturalWidth > 0) return imgs[lo];
+      if (hi < n && imgs[hi]?.complete && imgs[hi].naturalWidth > 0) return imgs[hi];
+    }
+    return null;
+  };
+
+  // Single-frame draw — never goes blank: if target frame isn't loaded yet,
+  // falls back to the nearest loaded frame.
   const drawAt = (frameFloat: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -121,12 +134,11 @@ export default function ScrollScrub({ totalFrames }: Props) {
     if (!ctx) return;
     const cw = canvas.clientWidth;
     const ch = canvas.clientHeight;
-    const idx = Math.max(
-      0,
-      Math.min(imagesRef.current.length - 1, Math.round(frameFloat))
-    );
+    const target = Math.round(frameFloat);
+    const img = nearestReady(target);
+    if (!img) return;
     ctx.clearRect(0, 0, cw, ch);
-    drawFrame(ctx, imagesRef.current[idx], cw, ch, 1);
+    drawFrame(ctx, img, cw, ch, 1);
   };
 
   // Intro reveal animations
