@@ -27,28 +27,28 @@ type Seg = {
 export const MOMENTS: Moment[] = [
   {
     id: "m1",
-    corner: "top-right",
+    corner: "center",
     eyebrow: "I.",
     body: "THE <b>NEW EARTH</b><br/>REQUIRES NEW SPACES.",
     sub: "Humanity is entering a period of transition deeper than economic cycles, technological waves, or cultural shifts. It is a change in how reality itself is perceived and experienced. As consciousness expands inward, the physical environments we inhabit must evolve to support this new way of being. The new earth requires new infrastructure — not just for shelter or function, but for becoming.",
   },
   {
     id: "m2",
-    corner: "bottom-left",
+    corner: "center",
     eyebrow: "II.",
     body: "ARCHITECTURE IS<br/><b>NOT NEUTRAL</b>.",
     sub: "Cities are built for efficiency, not awareness. Workspaces optimize for output, often at the cost of presence. Every environment either supports human alignment or quietly works against it. The spaces we move through shape what we are capable of becoming — and most of them were designed for a previous stage of humanity.",
   },
   {
     id: "m3",
-    corner: "top-left",
+    corner: "center",
     eyebrow: "III.",
     body: "SPACE SHAPES PERCEPTION.<br/>BEHAVIOR. <b>IDENTITY</b>.",
     sub: "Every human is a complex integration of body, mind, and inner state — not a single dimensional system. These dimensions constantly influence each other. When misaligned, performance drops and well-being becomes unstable. When aligned, there is a noticeable shift toward clarity, energy, and effectiveness. Cocoon is designed to support that alignment, continuously.",
   },
   {
     id: "m4",
-    corner: "bottom-right",
+    corner: "center",
     eyebrow: "IV.",
     body: "A <b>LIVING FIELD</b><br/>OF EXPERIENCE.",
     sub: "Cocoon is not a retreat from reality — it is an upgraded version of it. A space where movement, stillness, focus, creativity, and recovery coexist as one continuous practice rather than disconnected programs. Individuals are not forced into rigid structures but guided by intelligent design that naturally supports presence, performance, and inner alignment.",
