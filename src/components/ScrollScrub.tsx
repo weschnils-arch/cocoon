@@ -251,21 +251,27 @@ export default function ScrollScrub({ totalFrames }: Props) {
       {/* Soft top + bottom gradient */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink/55" />
 
-      {/* Intro brand overlay — bottom-anchored typographic, fades over the first video segment */}
+      {/* Intro brand overlay — top cluster (Ascension Center + tagline) at top,
+          Cocoon wordmark dropped near the bottom. Fades over first video segment. */}
       <div
         ref={introRef}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-end px-6 pb-[14vh] text-center md:pb-[12vh]"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-[14vh] pb-[4vh] text-center md:pt-[16vh] md:pb-[4vh]"
       >
+        {/* TOP: Ascension Center + tagline */}
+        <div className="flex flex-col items-center">
+          <span className="intro-mark wordmark text-[clamp(0.7rem,1vw,0.85rem)] text-gold/90">
+            Ascension Center
+          </span>
+          <div className="intro-rule mt-6 h-px w-20 bg-gold/55" />
+          <p className="intro-sub thin mt-7 max-w-2xl text-[clamp(1.05rem,2vw,1.6rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
+            A sanctuary for <span className="bold-accent">human potential</span>.
+          </p>
+        </div>
+
+        {/* BOTTOM: Cocoon wordmark */}
         <h1 className="intro-mark wordmark text-[clamp(2.5rem,8vw,6rem)] text-cream drop-shadow-[0_2px_28px_rgba(0,0,0,0.6)]">
           Cocoon
         </h1>
-        <span className="intro-mark wordmark mt-4 text-[clamp(0.7rem,1vw,0.85rem)] text-gold/85">
-          Ascension Center
-        </span>
-        <div className="intro-rule mt-6 h-px w-20 bg-gold/55" />
-        <p className="intro-sub thin mt-6 max-w-2xl text-[clamp(1.05rem,2vw,1.6rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
-          A sanctuary for <span className="bold-accent">human potential</span>.
-        </p>
       </div>
 
       {/* Scroll-keyed text moments — travel bottom → top across the screen during each pause */}
