@@ -7,6 +7,7 @@ import {
   frameFromProgress,
   momentState,
   introOpacity,
+  footerOpacityFromProgress,
 } from "./Moments";
 
 type Props = { totalFrames: number };
@@ -19,6 +20,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const momentRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentRef = useRef({ progress: 0 });
@@ -67,6 +69,12 @@ export default function ScrollScrub({ totalFrames }: Props) {
     if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
 
+  // Composition offset — shifts the canvas image to align the building visually.
+  // Positive X = shift right; negative = shift left.
+  const COMP_OFFSET_X = -0.03;
+  // Extra zoom on top of cover so shifting doesn't reveal a border edge.
+  const COMP_ZOOM = 1.08;
+
   const drawFrame = (
     ctx: CanvasRenderingContext2D,
     img: HTMLImageElement,
@@ -77,19 +85,20 @@ export default function ScrollScrub({ totalFrames }: Props) {
     if (!img || !img.complete || img.naturalWidth === 0) return;
     const ir = img.naturalWidth / img.naturalHeight;
     const cr = cw / ch;
-    let dw = cw,
-      dh = ch,
-      dx = 0,
-      dy = 0;
+    let dw: number, dh: number;
     if (ir > cr) {
       dh = ch;
       dw = ch * ir;
-      dx = (cw - dw) / 2;
     } else {
       dw = cw;
       dh = cw / ir;
-      dy = (ch - dh) / 2;
     }
+    // Apply zoom
+    dw *= COMP_ZOOM;
+    dh *= COMP_ZOOM;
+    // Center then horizontal offset
+    const dx = (cw - dw) / 2 + cw * COMP_OFFSET_X;
+    const dy = (ch - dh) / 2;
     ctx.globalAlpha = alpha;
     ctx.drawImage(img, dx, dy, dw, dh);
     ctx.globalAlpha = 1;
@@ -191,6 +200,11 @@ export default function ScrollScrub({ totalFrames }: Props) {
           const o = Math.max(0, 1 - p / 0.04);
           cueRef.current.style.opacity = String(o);
         }
+        if (footerRef.current) {
+          const o = footerOpacityFromProgress(p);
+          footerRef.current.style.opacity = String(o);
+          footerRef.current.style.pointerEvents = o > 0.6 ? "auto" : "none";
+        }
         updateMoments(p);
       },
     });
@@ -216,10 +230,10 @@ export default function ScrollScrub({ totalFrames }: Props) {
       {/* Soft top + bottom gradient */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink/55" />
 
-      {/* Intro brand overlay — typographic, fades over the first video segment */}
+      {/* Intro brand overlay — bottom-anchored typographic, fades over the first video segment */}
       <div
         ref={introRef}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-end px-6 pb-[14vh] text-center md:pb-[12vh]"
       >
         <h1 className="intro-mark wordmark text-[clamp(2.5rem,8vw,6rem)] text-cream drop-shadow-[0_2px_28px_rgba(0,0,0,0.6)]">
           Cocoon
@@ -227,8 +241,8 @@ export default function ScrollScrub({ totalFrames }: Props) {
         <span className="intro-mark wordmark mt-4 text-[clamp(0.7rem,1vw,0.85rem)] text-gold/85">
           Ascension Center
         </span>
-        <div className="intro-rule mt-7 h-px w-20 bg-gold/55" />
-        <p className="intro-sub thin mt-7 max-w-2xl text-[clamp(1.05rem,2vw,1.6rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
+        <div className="intro-rule mt-6 h-px w-20 bg-gold/55" />
+        <p className="intro-sub thin mt-6 max-w-2xl text-[clamp(1.05rem,2vw,1.6rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
           A sanctuary for <span className="bold-accent">human potential</span>.
         </p>
       </div>
@@ -247,22 +261,27 @@ export default function ScrollScrub({ totalFrames }: Props) {
               style={{ opacity: 0, visibility: "hidden" }}
             >
               <div className={`flex flex-col ${c.align} gap-4 max-w-[min(720px,92vw)]`}>
-                <img
-                  src="/logo-mark.webp"
-                  alt=""
-                  aria-hidden
-                  className="h-9 w-auto opacity-90 drop-shadow-[0_2px_18px_rgba(0,0,0,0.7)] md:h-11"
-                  decoding="async"
-                />
+                <div className="breathe-line h-[32rem] w-px md:h-[48rem]" aria-hidden />
+                <span className="wordmark text-[11px] text-cream md:text-[12px]">
+                  Cocoon
+                </span>
                 {m.eyebrow && (
-                  <span className="wordmark text-[10px] text-gold/85 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-                    {m.eyebrow}
-                  </span>
+                  <span className="label text-cream/65">{m.eyebrow}</span>
                 )}
                 <p
-                  className="thin text-[clamp(1.7rem,4.2vw,3.5rem)] leading-[1.06] tracking-[0.015em] text-cream"
+                  className="thin inline-block text-[clamp(1.7rem,4.2vw,3.5rem)] leading-[1.06] tracking-[0.015em] text-cream"
                   style={{
-                    textShadow: "0 2px 22px rgba(0,0,0,0.65), 0 1px 4px rgba(0,0,0,0.6)",
+                    backdropFilter: "blur(60px) saturate(170%)",
+                    WebkitBackdropFilter: "blur(60px) saturate(170%)",
+                    background: "rgba(20,18,16,0.38)",
+                    border: "1px solid rgba(244,237,224,0.14)",
+                    borderRadius: "16px",
+                    boxShadow:
+                      "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
+                    padding: "0.6em 1em",
+                    isolation: "isolate",
+                    transform: "translateZ(0)",
+                    willChange: "backdrop-filter",
                   }}
                   dangerouslySetInnerHTML={{ __html: m.body }}
                 />
@@ -281,19 +300,104 @@ export default function ScrollScrub({ totalFrames }: Props) {
         <div className="intro-cue-line mx-auto mt-4 h-10 w-px bg-cream/70" />
       </div>
 
-      {/* Loader */}
-      {!ready && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-ink">
-          <div className="text-center">
-            <div className="label text-cream/60">entering</div>
-            <div className="mt-4 h-px w-40 bg-cream/15">
-              <div
-                className="h-full bg-gold transition-[width] duration-200"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <div className="label mt-3 tabular-nums text-cream/40">{pct}%</div>
+      {/* Closing / Footer — fades in over the last frame at the end of scroll */}
+      <div
+        ref={footerRef}
+        className="absolute inset-0 z-20 flex flex-col"
+        style={{ opacity: 0 }}
+      >
+        {/* Soft dark gradient so footer chrome stays legible against the lounge frame */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/45 to-ink/85" />
+
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1400px] flex-col justify-between px-6 pt-[16vh] pb-8 md:px-12 md:pt-[14vh] md:pb-10">
+          {/* Closing headline */}
+          <div className="flex flex-col items-center text-center">
+            <div className="breathe-line h-16 w-px md:h-24" aria-hidden />
+            <span className="wordmark mt-5 text-[11px] text-cream md:text-[12px]">
+              Cocoon
+            </span>
+            <h2 className="display-thin mt-7 whitespace-nowrap text-[clamp(1.25rem,3.6vw,3.25rem)] text-cream">
+              A space for what you are{" "}
+              <span className="bold-accent">becoming</span>.
+            </h2>
+            <p className="thin mt-6 max-w-2xl text-[clamp(0.9rem,1.4vw,1.1rem)] leading-relaxed text-cream/85">
+              Architecture is not neutral.{" "}
+              <span className="bold-accent">Cocoon</span> is the infrastructure
+              for an evolving humanity.
+            </p>
           </div>
+
+          {/* Footer chrome */}
+          <div className="mt-10 flex flex-col gap-8 border-t border-cream/12 pt-8 md:gap-4">
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-6">
+              <div>
+                <span className="wordmark text-[10px] text-gold/85">Brand</span>
+                <p className="thin mt-3 text-[13px] text-cream/85 leading-relaxed">
+                  Cocoon
+                  <br />
+                  Ascension Center
+                  <br />
+                  est. 2026
+                </p>
+              </div>
+              <div>
+                <span className="wordmark text-[10px] text-gold/85">Contact</span>
+                <p className="thin mt-3 text-[13px] text-cream/85">
+                  <a
+                    href="mailto:hello@cocoon.center"
+                    className="border-b border-cream/25 pb-px transition-colors hover:border-gold hover:text-cream"
+                  >
+                    hello@cocoon.center
+                  </a>
+                </p>
+              </div>
+              <div>
+                <span className="wordmark text-[10px] text-gold/85">Vision</span>
+                <p className="thin mt-3 text-[13px] text-cream/85 leading-relaxed">
+                  Translating the ascension of human consciousness into physical
+                  form.
+                </p>
+              </div>
+              <div>
+                <span className="wordmark text-[10px] text-gold/85">Status</span>
+                <p className="thin mt-3 text-[13px] text-cream/85 leading-relaxed">
+                  In development. Founding cohort opening 2026.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-cream/10 pt-6 text-center md:flex-row md:text-left">
+              <span className="label text-cream/55">
+                © {new Date().getFullYear()} Cocoon. All rights reserved.
+              </span>
+              <span className="label text-cream/55">
+                Architecture for an evolving humanity.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Loader — branded, vertical line fills upward as frames preload */}
+      {!ready && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-ink px-6 text-center">
+          <h1 className="wordmark text-[clamp(2.25rem,7vw,5rem)] text-cream">
+            Cocoon
+          </h1>
+          <span className="wordmark mt-3 text-[clamp(0.65rem,0.9vw,0.78rem)] text-gold/85">
+            Ascension Center
+          </span>
+
+          {/* Vertical fill line — grows from bottom to top with preload progress */}
+          <div className="relative mt-12 h-48 w-px overflow-hidden bg-cream/12 md:h-64">
+            <div
+              className="absolute bottom-0 left-0 w-full bg-gold transition-[height] duration-300 ease-out"
+              style={{ height: `${pct}%` }}
+            />
+          </div>
+
+          <div className="label mt-6 tabular-nums text-cream/55">{pct}%</div>
+          <div className="label mt-2 text-cream/35">entering</div>
         </div>
       )}
     </section>

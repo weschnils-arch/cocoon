@@ -34,7 +34,7 @@ export default function App() {
   return (
     <main className="relative bg-ink text-cream">
       <Nav />
-      <ScrollScrub totalFrames={242} />
+      <ScrollScrub totalFrames={717} />
     </main>
   );
 }

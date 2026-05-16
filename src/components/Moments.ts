@@ -15,19 +15,13 @@ export type Moment = {
   body: string; // supports <b>…</b> and <br/>
 };
 
-type VideoSeg = {
-  kind: "video";
-  from: number; // frame
-  to: number; // frame
+type Seg = {
+  kind: "video" | "pause";
+  from: number; // frame at segment start
+  to: number; // frame at segment end (small delta for pauses → creep)
   weight: number;
+  momentId?: string;
 };
-type PauseSeg = {
-  kind: "pause";
-  at: number; // held frame
-  weight: number;
-  momentId: string;
-};
-type Seg = VideoSeg | PauseSeg;
 
 export const MOMENTS: Moment[] = [
   {
@@ -57,35 +51,75 @@ export const MOMENTS: Moment[] = [
   {
     id: "m5",
     corner: "center",
-    eyebrow: "—",
-    body: "INFRASTRUCTURE FOR AN<br/><b>EVOLVING HUMANITY</b>.",
+    eyebrow: "V.",
+    body: "WHERE <b>POTENTIAL</b><br/>BECOMES FORM.",
   },
 ];
 
-// Frame anchors split the 0..241 range into 6 video chunks + 5 pause points.
-const TOTAL_FRAMES = 242;
-const PAUSE_FRAMES = [40, 90, 135, 180, 220];
+// Three-segment journey, 48fps motion-interpolated:
+//   v1: frames 1-239   (exterior approach → entry → dome)
+//   v2: frames 240-478 (dome → bamboo lattice → second chamber)
+//   v3: frames 479-717 (over the lounge floor)
+const TOTAL_FRAMES = 717;
+// Anchors aligned to story beats:
+//   m1 — early v1, wide exterior approach
+//   m2 — late v1, just past the door / entering the dome
+//   m3 — mid v2, drifting through the bamboo lattice
+//   m4 — start of v3, entering the intimate lounge space
+//   m5 — late v3, resolution
+const PAUSE_ANCHORS = [80, 190, 320, 500, 660];
+const PAUSE_CREEP = 25;
 
-const VIDEO_WEIGHT = 1.4;
-const PAUSE_WEIGHT = 1.1;
+const VIDEO_SPEED = 1.0;
+const PAUSE_SPEED = 0.7;
 
 export const SEGMENTS: Seg[] = (() => {
   const out: Seg[] = [];
   let prev = 0;
-  PAUSE_FRAMES.forEach((p, i) => {
-    out.push({ kind: "video", from: prev, to: p, weight: VIDEO_WEIGHT });
+  PAUSE_ANCHORS.forEach((anchor, i) => {
+    out.push({
+      kind: "video",
+      from: prev,
+      to: anchor,
+      weight: (anchor - prev) / VIDEO_SPEED,
+    });
     out.push({
       kind: "pause",
-      at: p,
-      weight: PAUSE_WEIGHT,
+      from: anchor,
+      to: anchor + PAUSE_CREEP,
+      weight: PAUSE_CREEP / PAUSE_SPEED,
       momentId: MOMENTS[i].id,
     });
-    prev = p;
+    prev = anchor + PAUSE_CREEP;
   });
-  // Final coast to the last frame
-  out.push({ kind: "video", from: prev, to: TOTAL_FRAMES - 1, weight: 1.0 });
+  // Final "rest" segment — holds at the last frame with extra scroll length so the
+  // footer overlay has room to reveal cleanly. Weight is intentional, not derived.
+  out.push({
+    kind: "video",
+    from: prev,
+    to: TOTAL_FRAMES - 1,
+    weight: 100,
+  });
   return out;
 })();
+
+// Progress threshold at which the closing/footer overlay starts revealing.
+// (Derived from the last segment's start position.)
+export function footerOpacityFromProgress(p: number): number {
+  // Last segment begins where everything before it ends.
+  const lastIdx = SEGMENTS.length - 1;
+  let accBefore = 0;
+  for (let i = 0; i < lastIdx; i++) accBefore += SEGMENTS[i].weight;
+  const totalWeight = accBefore + SEGMENTS[lastIdx].weight;
+  const lastStart = accBefore / totalWeight;
+  const lastEnd = 1;
+  // Reveal between 25% and 75% of the last segment, then hold.
+  const inSeg = (p - lastStart) / (lastEnd - lastStart);
+  if (inSeg <= 0.25) return 0;
+  if (inSeg >= 0.75) return 1;
+  const t = (inSeg - 0.25) / 0.5;
+  return 1 - Math.pow(1 - t, 3);
+}
 
 const TOTAL_WEIGHT = SEGMENTS.reduce((s, x) => s + x.weight, 0);
 
@@ -102,13 +136,13 @@ function segRange(index: number): [number, number] {
 const RANGES: [number, number][] = SEGMENTS.map((_, i) => segRange(i));
 
 // Convert global scroll progress (0..1) to a fractional frame index.
+// Pause segments creep slowly (small from→to delta), video segments advance fully.
 export function frameFromProgress(p: number): number {
   p = Math.max(0, Math.min(1, p));
   for (let i = 0; i < SEGMENTS.length; i++) {
     const [s, e] = RANGES[i];
     if (p <= e) {
       const seg = SEGMENTS[i];
-      if (seg.kind === "pause") return seg.at;
       const t = (p - s) / Math.max(1e-6, e - s);
       return seg.from + t * (seg.to - seg.from);
     }
@@ -130,15 +164,12 @@ export function momentState(
       if (p <= s) return { opacity: 0, yFrac: 0.7 };
       if (p >= e) return { opacity: 0, yFrac: -0.7 };
       const t = (p - s) / (e - s); // 0..1 within pause
-      // Travel BOTTOM → TOP, eased so it lingers slightly mid-screen
-      const eased = t < 0.5
-        ? 2 * t * t
-        : 1 - Math.pow(-2 * t + 2, 2) / 2;
-      const yFrac = 0.7 - eased * 1.4;
-      // Opacity edges
+      // LINEAR travel bottom → top — moves at the same rate as the user scrolls
+      const yFrac = 0.7 - t * 1.4;
+      // Opacity edges only
       let opacity = 1;
-      if (t < 0.08) opacity = t / 0.08;
-      else if (t > 0.92) opacity = (1 - t) / 0.08;
+      if (t < 0.06) opacity = t / 0.06;
+      else if (t > 0.94) opacity = (1 - t) / 0.06;
       return { opacity, yFrac };
     }
   }

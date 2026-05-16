@@ -63,6 +63,18 @@
     letter-spacing: 0.04em;
   }
 
+  /* Vertical breathing line — used above each moment text */
+  .breathe-line {
+    background: linear-gradient(to bottom, rgba(244, 237, 224, 0) 0%, rgba(244, 237, 224, 0.95) 50%, rgba(244, 237, 224, 0) 100%);
+    animation: breatheLine 2.6s ease-in-out infinite;
+    transform-origin: top;
+  }
+
+  @keyframes breatheLine {
+    0%, 100% { transform: scaleY(0.65); opacity: 0.55; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
   .grain::after {
     content: "";
     position: absolute;
