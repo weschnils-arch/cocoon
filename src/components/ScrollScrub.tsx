@@ -345,8 +345,8 @@ export default function ScrollScrub({ totalFrames }: Props) {
         className="absolute inset-0 z-20 flex flex-col"
         style={{ opacity: 0 }}
       >
-        {/* Soft dark gradient — matches the rest of the scroll experience, keeps flow */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/40 to-ink/80" />
+        {/* Subtle dark gradient — only anchors the top/bottom, middle stays clear so the final frame shows through */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/25 via-transparent to-ink/50" />
 
         <div className="relative z-10 mx-auto flex h-full w-full max-w-[1400px] flex-col justify-between px-6 pt-[16vh] pb-8 md:px-12 md:pt-[14vh] md:pb-10">
           {/* Closing headline — same dark glass treatment as the moment boxes */}
