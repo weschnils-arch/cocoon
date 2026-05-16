@@ -13,7 +13,7 @@ import {
 type Props = { totalFrames: number };
 
 const framePath = (i: number) =>
-  `/frames/frame_${String(i).padStart(3, "0")}.webp`;
+  `/frames/frame_${String(i).padStart(3, "0")}.avif`;
 
 export default function ScrollScrub({ totalFrames }: Props) {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -27,11 +27,16 @@ export default function ScrollScrub({ totalFrames }: Props) {
   const [loaded, setLoaded] = useState(0);
   const [ready, setReady] = useState(false);
 
-  // Preload all frames
+  // Progressive preload — start the experience once a critical batch is loaded,
+  // continue streaming the rest in the background.
   useEffect(() => {
     let cancelled = false;
     const imgs: HTMLImageElement[] = [];
     let done = 0;
+    // Show experience once 22% of frames are ready (covers intro + start of journey).
+    // The drawFrame() guard skips missing frames, so the user can scroll into not-yet-loaded
+    // territory and it just holds the last drawn frame until the target arrives.
+    const readyThreshold = Math.max(60, Math.ceil(totalFrames * 0.22));
 
     for (let i = 1; i <= totalFrames; i++) {
       const img = new Image();
@@ -40,11 +45,14 @@ export default function ScrollScrub({ totalFrames }: Props) {
         done += 1;
         if (cancelled) return;
         setLoaded(done);
-        if (done === totalFrames) setReady(true);
+        if (done >= readyThreshold) setReady(true);
       };
       img.onerror = () => {
         done += 1;
-        if (!cancelled) setLoaded(done);
+        if (!cancelled) {
+          setLoaded(done);
+          if (done >= readyThreshold) setReady(true);
+        }
       };
       imgs.push(img);
     }
@@ -71,7 +79,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
 
   // Composition offset — shifts the canvas image to align the building visually.
   // Positive X = shift right; negative = shift left.
-  const COMP_OFFSET_X = -0.03;
+  const COMP_OFFSET_X = -0.02;
   // Extra zoom on top of cover so shifting doesn't reveal a border edge.
   const COMP_ZOOM = 1.08;
 
@@ -217,7 +225,8 @@ export default function ScrollScrub({ totalFrames }: Props) {
     };
   }, [ready, totalFrames]);
 
-  const pct = Math.round((loaded / totalFrames) * 100);
+  const readyThreshold = Math.max(60, Math.ceil(totalFrames * 0.22));
+  const pct = Math.min(100, Math.round((loaded / readyThreshold) * 100));
 
   return (
     <section
@@ -300,6 +309,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
         <div className="intro-cue-line mx-auto mt-4 h-10 w-px bg-cream/70" />
       </div>
 
+      {/* AVIF preload reference - frames preloaded via Image() in useEffect */}
       {/* Closing / Footer — fades in over the last frame at the end of scroll */}
       <div
         ref={footerRef}
