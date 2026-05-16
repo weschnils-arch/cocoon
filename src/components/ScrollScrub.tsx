@@ -296,28 +296,28 @@ export default function ScrollScrub({ totalFrames }: Props) {
                   <span className="label text-cream/65">{m.eyebrow}</span>
                 )}
                 <div
-                  className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-5`}
+                  className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-6 max-w-[min(640px,90vw)]`}
                   style={{
                     backdropFilter: "blur(60px) saturate(170%)",
                     WebkitBackdropFilter: "blur(60px) saturate(170%)",
-                    background: "rgba(20,18,16,0.38)",
+                    background: "rgba(20,18,16,0.42)",
                     border: "1px solid rgba(244,237,224,0.14)",
                     borderRadius: "16px",
                     boxShadow:
                       "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
-                    padding: "1.1em 1.4em 1.25em",
+                    padding: "1.5em 1.6em 1.7em",
                     isolation: "isolate",
                     transform: "translateZ(0)",
                     willChange: "backdrop-filter",
                   }}
                 >
                   <p
-                    className="thin text-[clamp(1.7rem,4.2vw,3.5rem)] leading-[1.06] tracking-[0.015em] text-cream"
+                    className="thin text-[clamp(1.5rem,3.6vw,2.9rem)] leading-[1.06] tracking-[0.015em] text-cream"
                     dangerouslySetInnerHTML={{ __html: m.body }}
                   />
                   {m.sub && (
                     <p
-                      className={`thin max-w-[42ch] text-[clamp(0.85rem,1.15vw,1rem)] leading-relaxed text-cream/80 ${c.align}`}
+                      className={`body text-[clamp(0.92rem,1.05vw,1.05rem)] leading-[1.65] text-cream/90 ${c.align}`}
                     >
                       {m.sub}
                     </p>
@@ -375,10 +375,13 @@ export default function ScrollScrub({ totalFrames }: Props) {
                 A space for what you are{" "}
                 <span className="bold-accent">becoming</span>.
               </h2>
-              <p className="thin max-w-[44ch] text-center text-[clamp(0.9rem,1.4vw,1.1rem)] leading-relaxed text-cream/85">
+              <p className="body max-w-[60ch] text-center text-[clamp(0.95rem,1.2vw,1.1rem)] leading-[1.65] text-cream/90">
                 Architecture is not neutral.{" "}
                 <span className="bold-accent">Cocoon</span> is the
-                infrastructure for an evolving humanity.
+                infrastructure for an evolving humanity — a global system of
+                environments designed to align body, mind, and inner state, so
+                that human potential can become consistent, expressed, and
+                lived.
               </p>
             </div>
           </div>
