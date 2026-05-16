@@ -78,7 +78,9 @@ const PAUSE_ANCHORS = [80, 190, 320, 500, 700];
 const PAUSE_CREEP = 25;
 
 const VIDEO_SPEED = 1.0;
-const PAUSE_SPEED = 0.7;
+// Pauses scroll at ~0.45× normal — combined with the 70% hold zone in the travel curve,
+// each moment now has a real dwell window for reading.
+const PAUSE_SPEED = 0.45;
 
 export const SEGMENTS: Seg[] = (() => {
   const out: Seg[] = [];
@@ -168,15 +170,38 @@ export function momentState(
     const seg = SEGMENTS[i];
     if (seg.kind === "pause" && seg.momentId === momentId) {
       const [s, e] = RANGES[i];
-      if (p <= s) return { opacity: 0, yFrac: 0.7 };
-      if (p >= e) return { opacity: 0, yFrac: -0.7 };
+      if (p <= s) return { opacity: 0, yFrac: 0.55 };
+      if (p >= e) return { opacity: 0, yFrac: -0.55 };
       const t = (p - s) / (e - s); // 0..1 within pause
-      // LINEAR travel bottom → top — moves at the same rate as the user scrolls
-      const yFrac = 0.7 - t * 1.4;
-      // Opacity edges only
+
+      // Three-phase travel (Apple-style dwell):
+      //   ENTER (0  → 0.15): rise from below to center, eased out
+      //   HOLD  (0.15 → 0.85): stationary at center — 70% of the pause is reading time
+      //   EXIT  (0.85 → 1):    rise from center to top, eased in
+      // Combined with PAUSE_WEIGHT, this gives genuine dwell time per moment.
+      const ENTER = 0.15;
+      const EXIT = 0.85;
+      const FROM = 0.55;
+      const TO = -0.55;
+
+      let yFrac: number;
+      if (t < ENTER) {
+        const x = t / ENTER;
+        const eased = 1 - Math.pow(1 - x, 3); // ease-out cubic
+        yFrac = FROM + eased * (0 - FROM);
+      } else if (t < EXIT) {
+        yFrac = 0; // HOLD at center — text dwells in view
+      } else {
+        const x = (t - EXIT) / (1 - EXIT);
+        const eased = Math.pow(x, 3); // ease-in cubic
+        yFrac = 0 + eased * (TO - 0);
+      }
+
+      // Opacity edges — fade in during enter, fade out during exit
       let opacity = 1;
-      if (t < 0.06) opacity = t / 0.06;
-      else if (t > 0.94) opacity = (1 - t) / 0.06;
+      if (t < ENTER * 0.6) opacity = t / (ENTER * 0.6);
+      else if (t > EXIT + (1 - EXIT) * 0.4)
+        opacity = (1 - t) / ((1 - EXIT) * 0.6);
       return { opacity, yFrac };
     }
   }
