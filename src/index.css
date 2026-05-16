@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply bg-ink text-cream;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-weight: 100;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: #c9a85a;
+    color: #1a1612;
+  }
+}
+
+@layer components {
+  /* Display + body — Thin Montserrat, regular case */
+  .thin {
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-weight: 100;
+    letter-spacing: 0;
+  }
+
+  .display-thin {
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-weight: 100;
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+
+  /* Bold reserved for action / accented words inside thin text */
+  .bold-accent,
+  .thin b,
+  .thin strong {
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  /* Wordmark style — RESERVED FOR NAVIGATION ONLY */
+  .wordmark {
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+  }
+
+  /* Small ornament text — thin, lowercase, gentle tracking (NOT wordmark) */
+  .label {
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-weight: 200;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+  }
+}
