@@ -21,6 +21,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
   const introRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
+  const footerCardRef = useRef<HTMLDivElement>(null);
   const momentRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentRef = useRef({ progress: 0 });
@@ -227,6 +228,15 @@ export default function ScrollScrub({ totalFrames }: Props) {
           const o = footerOpacityFromProgress(p);
           footerRef.current.style.opacity = String(o);
           footerRef.current.style.pointerEvents = o > 0.6 ? "auto" : "none";
+          // Ramp the closing card's blur with reveal progress so it doesn't snap on.
+          if (footerCardRef.current) {
+            const blurPx = (o * 12).toFixed(1);
+            const filter = `blur(${blurPx}px) saturate(140%)`;
+            footerCardRef.current.style.backdropFilter = filter;
+            (footerCardRef.current.style as CSSStyleDeclaration & {
+              webkitBackdropFilter?: string;
+            }).webkitBackdropFilter = filter;
+          }
         }
         updateMoments(p);
       },
@@ -260,8 +270,8 @@ export default function ScrollScrub({ totalFrames }: Props) {
         ref={introRef}
         className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-[7vh] pb-[14vh] text-center md:pt-[8vh] md:pb-[16vh]"
       >
-        {/* TOP: Ascension Center + tagline */}
-        <div className="flex flex-col items-center">
+        {/* TOP: Ascension Center + tagline — nudged slightly left to balance with the building shot */}
+        <div className="flex flex-col items-center -translate-x-[3vw] md:-translate-x-[4vw]">
           <span className="intro-mark wordmark text-[clamp(0.7rem,1vw,0.85rem)] text-cream">
             Ascension Center
           </span>
@@ -359,10 +369,12 @@ export default function ScrollScrub({ totalFrames }: Props) {
               Cocoon
             </span>
             <div
+              ref={footerCardRef}
               className="mt-7 inline-flex flex-col items-center gap-5"
               style={{
-                backdropFilter: "blur(24px) saturate(140%)",
-                WebkitBackdropFilter: "blur(24px) saturate(140%)",
+                // Initial blur 0 — gets ramped by onUpdate based on footer reveal progress
+                backdropFilter: "blur(0px) saturate(140%)",
+                WebkitBackdropFilter: "blur(0px) saturate(140%)",
                 background: "rgba(20,18,16,0.72)",
                 border: "1px solid rgba(244,237,224,0.14)",
                 borderRadius: "16px",
