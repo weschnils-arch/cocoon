@@ -289,8 +289,8 @@ export default function ScrollScrub({ totalFrames }: Props) {
                 {m.eyebrow && (
                   <span className="label text-cream/65">{m.eyebrow}</span>
                 )}
-                <p
-                  className="thin inline-block text-[clamp(1.7rem,4.2vw,3.5rem)] leading-[1.06] tracking-[0.015em] text-cream"
+                <div
+                  className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-5`}
                   style={{
                     backdropFilter: "blur(60px) saturate(170%)",
                     WebkitBackdropFilter: "blur(60px) saturate(170%)",
@@ -299,13 +299,24 @@ export default function ScrollScrub({ totalFrames }: Props) {
                     borderRadius: "16px",
                     boxShadow:
                       "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
-                    padding: "0.6em 1em",
+                    padding: "1.1em 1.4em 1.25em",
                     isolation: "isolate",
                     transform: "translateZ(0)",
                     willChange: "backdrop-filter",
                   }}
-                  dangerouslySetInnerHTML={{ __html: m.body }}
-                />
+                >
+                  <p
+                    className="thin text-[clamp(1.7rem,4.2vw,3.5rem)] leading-[1.06] tracking-[0.015em] text-cream"
+                    dangerouslySetInnerHTML={{ __html: m.body }}
+                  />
+                  {m.sub && (
+                    <p
+                      className={`thin max-w-[42ch] text-[clamp(0.85rem,1.15vw,1rem)] leading-relaxed text-cream/80 ${c.align}`}
+                    >
+                      {m.sub}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -332,21 +343,38 @@ export default function ScrollScrub({ totalFrames }: Props) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/45 to-ink/85" />
 
         <div className="relative z-10 mx-auto flex h-full w-full max-w-[1400px] flex-col justify-between px-6 pt-[16vh] pb-8 md:px-12 md:pt-[14vh] md:pb-10">
-          {/* Closing headline */}
+          {/* Closing headline — same glass treatment as the moment boxes */}
           <div className="flex flex-col items-center text-center">
             <div className="breathe-line h-16 w-px md:h-24" aria-hidden />
             <span className="wordmark mt-5 text-[11px] text-cream md:text-[12px]">
               Cocoon
             </span>
-            <h2 className="display-thin mt-7 whitespace-nowrap text-[clamp(1.25rem,3.6vw,3.25rem)] text-cream">
-              A space for what you are{" "}
-              <span className="bold-accent">becoming</span>.
-            </h2>
-            <p className="thin mt-6 max-w-2xl text-[clamp(0.9rem,1.4vw,1.1rem)] leading-relaxed text-cream/85">
-              Architecture is not neutral.{" "}
-              <span className="bold-accent">Cocoon</span> is the infrastructure
-              for an evolving humanity.
-            </p>
+            <div
+              className="mt-7 inline-flex flex-col items-center gap-5"
+              style={{
+                backdropFilter: "blur(60px) saturate(170%)",
+                WebkitBackdropFilter: "blur(60px) saturate(170%)",
+                background: "rgba(20,18,16,0.38)",
+                border: "1px solid rgba(244,237,224,0.14)",
+                borderRadius: "16px",
+                boxShadow:
+                  "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
+                padding: "1.1em 1.4em 1.25em",
+                isolation: "isolate",
+                transform: "translateZ(0)",
+                willChange: "backdrop-filter",
+              }}
+            >
+              <h2 className="display-thin whitespace-nowrap text-[clamp(1.25rem,3.6vw,3.25rem)] text-cream">
+                A space for what you are{" "}
+                <span className="bold-accent">becoming</span>.
+              </h2>
+              <p className="thin max-w-[44ch] text-center text-[clamp(0.9rem,1.4vw,1.1rem)] leading-relaxed text-cream/85">
+                Architecture is not neutral.{" "}
+                <span className="bold-accent">Cocoon</span> is the
+                infrastructure for an evolving humanity.
+              </p>
+            </div>
           </div>
 
           {/* Footer chrome */}

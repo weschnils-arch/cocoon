@@ -12,7 +12,8 @@ export type Moment = {
   id: string;
   corner: Corner;
   eyebrow?: string;
-  body: string; // supports <b>…</b> and <br/>
+  body: string; // headline — supports <b>…</b> and <br/>
+  sub?: string; // supporting sentence — short, thin, calmer than the headline
 };
 
 type Seg = {
@@ -29,45 +30,51 @@ export const MOMENTS: Moment[] = [
     corner: "top-right",
     eyebrow: "I.",
     body: "THE <b>NEW EARTH</b><br/>REQUIRES NEW SPACES.",
+    sub: "Humanity is entering a transition deeper than economic cycles or technological waves — a change in how reality itself is perceived and lived.",
   },
   {
     id: "m2",
     corner: "bottom-left",
     eyebrow: "II.",
     body: "ARCHITECTURE IS<br/><b>NOT NEUTRAL</b>.",
+    sub: "Every environment we inhabit either supports human alignment or quietly works against it. Cocoon is designed for the first.",
   },
   {
     id: "m3",
     corner: "top-left",
     eyebrow: "III.",
     body: "SPACE SHAPES PERCEPTION.<br/>BEHAVIOR. <b>IDENTITY</b>.",
+    sub: "Body, mind, and inner state are not separate systems — they are one continuous field. Cocoon treats them as such.",
   },
   {
     id: "m4",
     corner: "bottom-right",
     eyebrow: "IV.",
     body: "A <b>LIVING FIELD</b><br/>OF EXPERIENCE.",
+    sub: "Movement, stillness, focus, and recovery coexist in one integrated environment — not a collection of disconnected programs.",
   },
   {
     id: "m5",
     corner: "center",
     eyebrow: "V.",
     body: "WHERE <b>POTENTIAL</b><br/>BECOMES FORM.",
+    sub: "Cocoon is the infrastructure for an evolving humanity — a space designed for what you are becoming.",
   },
 ];
 
-// Three-segment journey, 48fps motion-interpolated:
-//   v1: frames 1-239   (exterior approach → entry → dome)
+// Four-segment journey, 48fps motion-interpolated:
+//   v1: frames   1-239 (exterior approach → entry → dome)
 //   v2: frames 240-478 (dome → bamboo lattice → second chamber)
 //   v3: frames 479-717 (over the lounge floor)
-const TOTAL_FRAMES = 717;
+//   v4: frames 718-956 (pull back to reveal the grand dome interior — resolution)
+const TOTAL_FRAMES = 956;
 // Anchors aligned to story beats:
 //   m1 — early v1, wide exterior approach
 //   m2 — late v1, just past the door / entering the dome
 //   m3 — mid v2, drifting through the bamboo lattice
 //   m4 — start of v3, entering the intimate lounge space
-//   m5 — late v3, resolution
-const PAUSE_ANCHORS = [80, 190, 320, 500, 660];
+//   m5 — late v3 / early v4, the resolution begins
+const PAUSE_ANCHORS = [80, 190, 320, 500, 700];
 const PAUSE_CREEP = 25;
 
 const VIDEO_SPEED = 1.0;
