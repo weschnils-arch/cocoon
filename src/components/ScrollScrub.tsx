@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { MOMENTS, momentVisibility, cornerClasses } from "./Moments";
+import {
+  MOMENTS,
+  cornerClasses,
+  frameFromProgress,
+  momentState,
+  introOpacity,
+} from "./Moments";
 
 type Props = { totalFrames: number };
 
@@ -15,7 +21,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
   const cueRef = useRef<HTMLDivElement>(null);
   const momentRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const imagesRef = useRef<HTMLImageElement[]>([]);
-  const currentRef = useRef({ frame: 0 });
+  const currentRef = useRef({ progress: 0 });
   const [loaded, setLoaded] = useState(0);
   const [ready, setReady] = useState(false);
 
@@ -89,31 +95,24 @@ export default function ScrollScrub({ totalFrames }: Props) {
     ctx.globalAlpha = 1;
   };
 
-  // Crossfade between adjacent frames based on fractional position
-  // -> smooths out the 24fps source so it feels continuous
-  const draw = (frameFloat: number) => {
+  // Single-frame draw — no crossfade (avoids motion-blur double-exposure).
+  // Smoothness comes from Lenis + GSAP scrub damping.
+  const drawAt = (frameFloat: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const cw = canvas.clientWidth;
     const ch = canvas.clientHeight;
-
-    const i0 = Math.floor(frameFloat);
-    const i1 = Math.min(i0 + 1, imagesRef.current.length - 1);
-    const t = frameFloat - i0;
-
-    const a = imagesRef.current[i0];
-    const b = imagesRef.current[i1];
-
+    const idx = Math.max(
+      0,
+      Math.min(imagesRef.current.length - 1, Math.round(frameFloat))
+    );
     ctx.clearRect(0, 0, cw, ch);
-    drawFrame(ctx, a, cw, ch, 1);
-    if (i1 !== i0 && b && t > 0) {
-      drawFrame(ctx, b, cw, ch, t);
-    }
+    drawFrame(ctx, imagesRef.current[idx], cw, ch, 1);
   };
 
-  // Intro reveal
+  // Intro reveal animations
   useEffect(() => {
     if (!ready) return;
     gsap.fromTo(
@@ -150,57 +149,49 @@ export default function ScrollScrub({ totalFrames }: Props) {
   useEffect(() => {
     if (!ready || !sectionRef.current) return;
     sizeCanvas();
-    draw(0);
+    drawAt(frameFromProgress(0));
 
     const onResize = () => {
       sizeCanvas();
-      draw(currentRef.current.frame);
+      drawAt(frameFromProgress(currentRef.current.progress));
     };
     window.addEventListener("resize", onResize);
 
-    const updateMoments = (progress: number) => {
+    const updateMoments = (p: number) => {
+      const vh = window.innerHeight;
       MOMENTS.forEach((m) => {
         const el = momentRefs.current[m.id];
         if (!el) return;
-        const { opacity, y } = momentVisibility(m, progress);
+        const { opacity, yFrac } = momentState(m.id, p);
         el.style.opacity = String(opacity);
-        el.style.transform = `translate3d(0, ${y}px, 0)`;
+        el.style.transform = `translate3d(0, ${yFrac * vh}px, 0)`;
         el.style.visibility = opacity < 0.01 ? "hidden" : "visible";
       });
     };
 
-    const tween = gsap.to(currentRef.current, {
-      frame: totalFrames - 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top top",
-        end: "+=650%",
-        scrub: 1.1,
-        pin: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const f = Math.min(
-            totalFrames - 1,
-            Math.max(0, self.progress * (totalFrames - 1))
-          );
-          currentRef.current.frame = f;
-          draw(f);
+    const trigger = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: "top top",
+      end: "+=900%",
+      scrub: 1.1,
+      pin: true,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        currentRef.current.progress = p;
+        drawAt(frameFromProgress(p));
 
-          // Intro overlay fades out by 11% progress
-          if (introRef.current) {
-            const o = Math.max(0, 1 - self.progress / 0.11);
-            introRef.current.style.opacity = String(o);
-            introRef.current.style.pointerEvents = o < 0.05 ? "none" : "auto";
-          }
-          if (cueRef.current) {
-            const o = Math.max(0, 1 - self.progress / 0.05);
-            cueRef.current.style.opacity = String(o);
-          }
-
-          updateMoments(self.progress);
-        },
+        if (introRef.current) {
+          const o = introOpacity(p);
+          introRef.current.style.opacity = String(o);
+          introRef.current.style.pointerEvents = o < 0.05 ? "none" : "auto";
+        }
+        if (cueRef.current) {
+          const o = Math.max(0, 1 - p / 0.04);
+          cueRef.current.style.opacity = String(o);
+        }
+        updateMoments(p);
       },
     });
 
@@ -208,8 +199,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
 
     return () => {
       window.removeEventListener("resize", onResize);
-      tween.scrollTrigger?.kill();
-      tween.kill();
+      trigger.kill();
     };
   }, [ready, totalFrames]);
 
@@ -223,28 +213,27 @@ export default function ScrollScrub({ totalFrames }: Props) {
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
-      {/* Soft top + bottom gradient to anchor overlay copy */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/15 to-ink/65" />
+      {/* Soft top + bottom gradient */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink/55" />
 
-      {/* Intro brand overlay — visible at scroll 0, fades as journey begins */}
+      {/* Intro brand overlay — typographic, fades over the first video segment */}
       <div
         ref={introRef}
         className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center"
       >
-        <img
-          src="/logo.webp"
-          alt="Cocoon — Ascension Center"
-          className="intro-mark h-auto w-[min(520px,72vw)] drop-shadow-[0_2px_28px_rgba(0,0,0,0.55)]"
-          fetchPriority="high"
-          decoding="async"
-        />
-        <div className="intro-rule mt-6 h-px w-20 bg-gold/55" />
+        <h1 className="intro-mark wordmark text-[clamp(2.5rem,8vw,6rem)] text-cream drop-shadow-[0_2px_28px_rgba(0,0,0,0.6)]">
+          Cocoon
+        </h1>
+        <span className="intro-mark wordmark mt-4 text-[clamp(0.7rem,1vw,0.85rem)] text-gold/85">
+          Ascension Center
+        </span>
+        <div className="intro-rule mt-7 h-px w-20 bg-gold/55" />
         <p className="intro-sub thin mt-7 max-w-2xl text-[clamp(1.05rem,2vw,1.6rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
           A sanctuary for <span className="bold-accent">human potential</span>.
         </p>
       </div>
 
-      {/* Scroll-keyed text moments — each bundle floats to a different corner */}
+      {/* Scroll-keyed text moments — travel bottom → top across the screen during each pause */}
       <div className="pointer-events-none absolute inset-0 z-10">
         {MOMENTS.map((m) => {
           const c = cornerClasses(m.corner);
@@ -254,26 +243,27 @@ export default function ScrollScrub({ totalFrames }: Props) {
               ref={(el) => {
                 momentRefs.current[m.id] = el;
               }}
-              className={`absolute inset-0 flex flex-col ${c.position} will-change-[opacity,transform]`}
+              className={`absolute inset-0 flex flex-col justify-center ${c.align} px-6 md:px-[8vw] will-change-[opacity,transform]`}
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              <div
-                className={`flex flex-col ${c.align} gap-4 rounded-2xl bg-ink/55 backdrop-blur-md border border-cream/8 px-6 py-7 md:px-9 md:py-9 max-w-[min(680px,90vw)] shadow-[0_18px_60px_rgba(0,0,0,0.5)]`}
-              >
+              <div className={`flex flex-col ${c.align} gap-4 max-w-[min(720px,92vw)]`}>
                 <img
                   src="/logo-mark.webp"
                   alt=""
                   aria-hidden
-                  className="h-9 w-auto opacity-90 md:h-11"
+                  className="h-9 w-auto opacity-90 drop-shadow-[0_2px_18px_rgba(0,0,0,0.7)] md:h-11"
                   decoding="async"
                 />
                 {m.eyebrow && (
-                  <span className="wordmark text-[10px] text-gold/80">
+                  <span className="wordmark text-[10px] text-gold/85 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
                     {m.eyebrow}
                   </span>
                 )}
                 <p
-                  className="thin text-[clamp(1.6rem,4vw,3.25rem)] leading-[1.08] tracking-[0.02em] text-cream"
+                  className="thin text-[clamp(1.7rem,4.2vw,3.5rem)] leading-[1.06] tracking-[0.015em] text-cream"
+                  style={{
+                    textShadow: "0 2px 22px rgba(0,0,0,0.65), 0 1px 4px rgba(0,0,0,0.6)",
+                  }}
                   dangerouslySetInnerHTML={{ __html: m.body }}
                 />
               </div>
