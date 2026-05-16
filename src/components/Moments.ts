@@ -27,37 +27,37 @@ type Seg = {
 export const MOMENTS: Moment[] = [
   {
     id: "m1",
-    corner: "center",
+    corner: "top-right",
     eyebrow: "I.",
-    body: "THE <b>NEW EARTH</b><br/>REQUIRES NEW SPACES.",
+    body: "THE <b>NEW EARTH</b> REQUIRES NEW SPACES.",
     sub: "Humanity is entering a period of transition deeper than economic cycles, technological waves, or cultural shifts. It is a change in how reality itself is perceived and experienced. As consciousness expands inward, the physical environments we inhabit must evolve to support this new way of being. The new earth requires new infrastructure — not just for shelter or function, but for becoming.",
   },
   {
     id: "m2",
-    corner: "center",
+    corner: "bottom-left",
     eyebrow: "II.",
-    body: "ARCHITECTURE IS<br/><b>NOT NEUTRAL</b>.",
+    body: "EVERY SPACE <b>SHAPES</b> US.",
     sub: "Cities are built for efficiency, not awareness. Workspaces optimize for output, often at the cost of presence. Every environment either supports human alignment or quietly works against it. The spaces we move through shape what we are capable of becoming — and most of them were designed for a previous stage of humanity.",
   },
   {
     id: "m3",
-    corner: "center",
+    corner: "top-left",
     eyebrow: "III.",
-    body: "SPACE SHAPES PERCEPTION.<br/>BEHAVIOR. <b>IDENTITY</b>.",
+    body: "PERCEPTION. BEHAVIOR. <b>IDENTITY</b>.",
     sub: "Every human is a complex integration of body, mind, and inner state — not a single dimensional system. These dimensions constantly influence each other. When misaligned, performance drops and well-being becomes unstable. When aligned, there is a noticeable shift toward clarity, energy, and effectiveness. Cocoon is designed to support that alignment, continuously.",
   },
   {
     id: "m4",
-    corner: "center",
+    corner: "bottom-right",
     eyebrow: "IV.",
-    body: "A <b>LIVING FIELD</b><br/>OF EXPERIENCE.",
+    body: "A <b>LIVING FIELD</b> OF EXPERIENCE.",
     sub: "Cocoon is not a retreat from reality — it is an upgraded version of it. A space where movement, stillness, focus, creativity, and recovery coexist as one continuous practice rather than disconnected programs. Individuals are not forced into rigid structures but guided by intelligent design that naturally supports presence, performance, and inner alignment.",
   },
   {
     id: "m5",
     corner: "center",
     eyebrow: "V.",
-    body: "WHERE <b>POTENTIAL</b><br/>BECOMES FORM.",
+    body: "WHERE <b>POTENTIAL</b> BECOMES FORM.",
     sub: "Cocoon is designed to align the full human system and translate internal potential into external reality. As this scales across locations, it becomes more than a collection of spaces — it becomes a recognizable system of environments for people committed to growth, awareness, and integrated living. The future of reality, in practical terms, is shaped by the environments that support what humans are becoming.",
   },
 ];
@@ -159,9 +159,16 @@ export function frameFromProgress(p: number): number {
   return TOTAL_FRAMES - 1;
 }
 
+// Where each corner-anchored moment stops vertically during its hold zone.
+// (Travel still enters from below-viewport and exits above.)
+function holdYForCorner(corner: Corner): number {
+  if (corner.startsWith("top-")) return -0.28; // upper third
+  if (corner.startsWith("bottom-")) return 0.28; // lower third
+  return 0; // center
+}
+
 // Visibility for a moment based on the progress range of its owning pause segment.
-// Text TRAVELS from above-viewport (yFrac = -0.6) to below-viewport (+0.6)
-// through the whole pause window. Opacity stays ~1 while in view, fades at the edges only.
+// Three-phase: enter from below → HOLD at corner-appropriate position → exit above.
 export function momentState(
   momentId: string,
   p: number
@@ -169,6 +176,8 @@ export function momentState(
   for (let i = 0; i < SEGMENTS.length; i++) {
     const seg = SEGMENTS[i];
     if (seg.kind === "pause" && seg.momentId === momentId) {
+      const moment = MOMENTS.find((m) => m.id === momentId);
+      const holdY = moment ? holdYForCorner(moment.corner) : 0;
       const [s, e] = RANGES[i];
       if (p <= s) return { opacity: 0, yFrac: 0.55 };
       if (p >= e) return { opacity: 0, yFrac: -0.55 };
@@ -188,13 +197,13 @@ export function momentState(
       if (t < ENTER) {
         const x = t / ENTER;
         const eased = 1 - Math.pow(1 - x, 3); // ease-out cubic
-        yFrac = FROM + eased * (0 - FROM);
+        yFrac = FROM + eased * (holdY - FROM);
       } else if (t < EXIT) {
-        yFrac = 0; // HOLD at center — text dwells in view
+        yFrac = holdY; // HOLD at corner-anchored position
       } else {
         const x = (t - EXIT) / (1 - EXIT);
         const eased = Math.pow(x, 3); // ease-in cubic
-        yFrac = 0 + eased * (TO - 0);
+        yFrac = holdY + eased * (TO - holdY);
       }
 
       // Opacity edges — fade in during enter, fade out during exit

@@ -300,15 +300,11 @@ export default function ScrollScrub({ totalFrames }: Props) {
               className={`absolute inset-0 flex flex-col justify-center ${c.align} px-6 md:px-[8vw] will-change-[opacity,transform]`}
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              {/* Glass card is the centered element. Line + wordmark + eyebrow are
-                  absolute above it so they don't push the card off-center. */}
-              <div className="relative inline-flex flex-col items-center max-w-[min(640px,90vw)]">
-                {/* Decorative cluster above the box — does not affect vertical centering */}
-                <div className="pointer-events-none absolute bottom-full left-1/2 mb-5 flex -translate-x-1/2 flex-col items-center gap-3">
-                  <div
-                    className="breathe-line h-32 w-px md:h-48"
-                    aria-hidden
-                  />
+              {/* Wide horizontal card. Line + wordmark + eyebrow sit absolute above. */}
+              <div className={`relative inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} max-w-[min(900px,94vw)]`}>
+                {/* Decorative cluster — absolute above the box */}
+                <div className={`pointer-events-none absolute bottom-full left-1/2 mb-5 flex -translate-x-1/2 flex-col items-center gap-3`}>
+                  <div className="breathe-line h-32 w-px md:h-44" aria-hidden />
                   <span className="wordmark text-[11px] text-cream md:text-[12px]">
                     Cocoon
                   </span>
@@ -317,9 +313,9 @@ export default function ScrollScrub({ totalFrames }: Props) {
                   )}
                 </div>
 
-                {/* The glass card — this is what lands at viewport center */}
+                {/* The glass card — wide horizontal, short */}
                 <div
-                  className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-6 w-full`}
+                  className={`flex flex-col ${c.align} gap-3 w-full`}
                   style={{
                     backdropFilter: "blur(36px) saturate(150%)",
                     WebkitBackdropFilter: "blur(36px) saturate(150%)",
@@ -328,19 +324,19 @@ export default function ScrollScrub({ totalFrames }: Props) {
                     borderRadius: "16px",
                     boxShadow:
                       "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
-                    padding: "1.5em 1.6em 1.7em",
+                    padding: "1.2em 1.6em 1.3em",
                     isolation: "isolate",
                     transform: "translateZ(0)",
                     willChange: "backdrop-filter",
                   }}
                 >
                   <p
-                    className="thin text-[clamp(1.5rem,3.6vw,2.9rem)] leading-[1.06] tracking-[0.015em] text-cream"
+                    className="thin whitespace-nowrap text-[clamp(1.1rem,2.8vw,2.4rem)] leading-[1.1] tracking-[0.015em] text-cream"
                     dangerouslySetInnerHTML={{ __html: m.body }}
                   />
                   {m.sub && (
                     <p
-                      className={`body text-[clamp(0.92rem,1.05vw,1.05rem)] leading-[1.65] text-cream/90 ${c.align}`}
+                      className={`body text-[clamp(0.88rem,1vw,1rem)] leading-[1.6] text-cream/90 ${c.align}`}
                     >
                       {m.sub}
                     </p>
