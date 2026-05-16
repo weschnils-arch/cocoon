@@ -27,7 +27,7 @@ type Seg = {
 export const MOMENTS: Moment[] = [
   {
     id: "m1",
-    corner: "top-right",
+    corner: "bottom-right",
     eyebrow: "I.",
     body: "THE <b>NEW EARTH</b> REQUIRES NEW SPACES.",
     sub: "Humanity is entering a period of transition deeper than economic cycles, technological waves, or cultural shifts. It is a change in how reality itself is perceived and experienced. As consciousness expands inward, the physical environments we inhabit must evolve to support this new way of being. The new earth requires new infrastructure — not just for shelter or function, but for becoming.",
