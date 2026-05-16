@@ -255,7 +255,7 @@ export default function ScrollScrub({ totalFrames }: Props) {
           Cocoon wordmark dropped near the bottom. Fades over first video segment. */}
       <div
         ref={introRef}
-        className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-[7vh] pb-[5vh] text-center md:pt-[8vh] md:pb-[5vh]"
+        className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-[7vh] pb-[14vh] text-center md:pt-[8vh] md:pb-[16vh]"
       >
         {/* TOP: Ascension Center + tagline */}
         <div className="flex flex-col items-center">
@@ -345,53 +345,37 @@ export default function ScrollScrub({ totalFrames }: Props) {
         className="absolute inset-0 z-20 flex flex-col"
         style={{ opacity: 0 }}
       >
-        {/* Very subtle cream wash — softens the final frame into a calm, light "arrived" tone.
-            Slightly stronger at the bottom so footer chrome stays grounded. */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(244,237,224,0.22) 0%, rgba(244,237,224,0.12) 35%, rgba(244,237,224,0.28) 100%)",
-            backdropFilter: "blur(2px) saturate(95%)",
-            WebkitBackdropFilter: "blur(2px) saturate(95%)",
-          }}
-        />
+        {/* Soft dark gradient — matches the rest of the scroll experience, keeps flow */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/40 to-ink/80" />
 
         <div className="relative z-10 mx-auto flex h-full w-full max-w-[1400px] flex-col justify-between px-6 pt-[16vh] pb-8 md:px-12 md:pt-[14vh] md:pb-10">
-          {/* Closing headline — LIGHT glass treatment (subtle cream) for the resolution */}
+          {/* Closing headline — same dark glass treatment as the moment boxes */}
           <div className="flex flex-col items-center text-center">
-            <div
-              className="breathe-line h-16 w-px md:h-24"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(26,22,18,0) 0%, rgba(26,22,18,0.55) 50%, rgba(26,22,18,0) 100%)",
-              }}
-              aria-hidden
-            />
-            <span className="wordmark mt-5 text-[11px] text-ink md:text-[12px]">
+            <div className="breathe-line h-16 w-px md:h-24" aria-hidden />
+            <span className="wordmark mt-5 text-[11px] text-cream md:text-[12px]">
               Cocoon
             </span>
             <div
               className="mt-7 inline-flex flex-col items-center gap-5"
               style={{
-                backdropFilter: "blur(60px) saturate(120%)",
-                WebkitBackdropFilter: "blur(60px) saturate(120%)",
-                background: "rgba(244,237,224,0.55)",
-                border: "1px solid rgba(244,237,224,0.55)",
+                backdropFilter: "blur(60px) saturate(170%)",
+                WebkitBackdropFilter: "blur(60px) saturate(170%)",
+                background: "rgba(20,18,16,0.42)",
+                border: "1px solid rgba(244,237,224,0.14)",
                 borderRadius: "16px",
                 boxShadow:
-                  "0 24px 70px rgba(20,18,16,0.18), inset 0 1px 0 rgba(255,255,255,0.5)",
+                  "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
                 padding: "1.5em 1.6em 1.7em",
                 isolation: "isolate",
                 transform: "translateZ(0)",
                 willChange: "backdrop-filter",
               }}
             >
-              <h2 className="display-thin whitespace-nowrap text-[clamp(1.25rem,3.6vw,3.25rem)] text-ink">
+              <h2 className="display-thin whitespace-nowrap text-[clamp(1.25rem,3.6vw,3.25rem)] text-cream">
                 A space for what you are{" "}
                 <span className="bold-accent">becoming</span>.
               </h2>
-              <p className="body max-w-[60ch] text-center text-[clamp(0.95rem,1.2vw,1.1rem)] leading-[1.65] text-ink/85">
+              <p className="body max-w-[60ch] text-center text-[clamp(0.95rem,1.2vw,1.1rem)] leading-[1.65] text-cream/90">
                 Architecture is not neutral.{" "}
                 <span className="bold-accent">Cocoon</span> is the
                 infrastructure for an evolving humanity — a global system of
@@ -402,12 +386,12 @@ export default function ScrollScrub({ totalFrames }: Props) {
             </div>
           </div>
 
-          {/* Footer chrome — dark text on the subtle light wash */}
-          <div className="mt-10 flex flex-col gap-8 border-t border-ink/15 pt-8 md:gap-4">
+          {/* Footer chrome — cream text on dark wash, consistent with rest of journey */}
+          <div className="mt-10 flex flex-col gap-8 border-t border-cream/12 pt-8 md:gap-4">
             <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-6">
               <div>
-                <span className="wordmark text-[10px] text-ink/65">Brand</span>
-                <p className="body mt-3 text-[13px] leading-relaxed text-ink/80">
+                <span className="wordmark text-[10px] text-gold/85">Brand</span>
+                <p className="body mt-3 text-[13px] leading-relaxed text-cream/85">
                   Cocoon
                   <br />
                   Ascension Center
@@ -416,36 +400,36 @@ export default function ScrollScrub({ totalFrames }: Props) {
                 </p>
               </div>
               <div>
-                <span className="wordmark text-[10px] text-ink/65">Contact</span>
-                <p className="body mt-3 text-[13px] text-ink/80">
+                <span className="wordmark text-[10px] text-gold/85">Contact</span>
+                <p className="body mt-3 text-[13px] text-cream/85">
                   <a
                     href="mailto:hello@cocoon.center"
-                    className="border-b border-ink/30 pb-px transition-colors hover:border-ink hover:text-ink"
+                    className="border-b border-cream/25 pb-px transition-colors hover:border-gold hover:text-cream"
                   >
                     hello@cocoon.center
                   </a>
                 </p>
               </div>
               <div>
-                <span className="wordmark text-[10px] text-ink/65">Vision</span>
-                <p className="body mt-3 text-[13px] leading-relaxed text-ink/80">
+                <span className="wordmark text-[10px] text-gold/85">Vision</span>
+                <p className="body mt-3 text-[13px] leading-relaxed text-cream/85">
                   Translating the ascension of human consciousness into physical
                   form.
                 </p>
               </div>
               <div>
-                <span className="wordmark text-[10px] text-ink/65">Status</span>
-                <p className="body mt-3 text-[13px] leading-relaxed text-ink/80">
+                <span className="wordmark text-[10px] text-gold/85">Status</span>
+                <p className="body mt-3 text-[13px] leading-relaxed text-cream/85">
                   In development. Founding cohort opening 2026.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-between gap-3 border-t border-ink/12 pt-6 text-center md:flex-row md:text-left">
-              <span className="label text-ink/55">
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-cream/10 pt-6 text-center md:flex-row md:text-left">
+              <span className="label text-cream/55">
                 © {new Date().getFullYear()} Cocoon. All rights reserved.
               </span>
-              <span className="label text-ink/55">
+              <span className="label text-cream/55">
                 Architecture for an evolving humanity.
               </span>
             </div>
