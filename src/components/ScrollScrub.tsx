@@ -259,11 +259,11 @@ export default function ScrollScrub({ totalFrames }: Props) {
       >
         {/* TOP: Ascension Center + tagline */}
         <div className="flex flex-col items-center">
-          <span className="intro-mark wordmark text-[clamp(0.7rem,1vw,0.85rem)] text-gold/90">
+          <span className="intro-mark wordmark text-[clamp(0.7rem,1vw,0.85rem)] text-cream">
             Ascension Center
           </span>
-          <div className="intro-rule mt-6 h-px w-20 bg-gold/55" />
-          <p className="intro-sub thin mt-7 max-w-2xl text-[clamp(1.05rem,2vw,1.6rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
+          <div className="intro-rule mt-6 h-px w-20 bg-cream/45" />
+          <p className="intro-sub body mt-7 max-w-2xl text-[clamp(1rem,1.6vw,1.35rem)] leading-snug text-cream/95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
             A sanctuary for <span className="bold-accent">human potential</span>.
           </p>
         </div>
@@ -298,9 +298,9 @@ export default function ScrollScrub({ totalFrames }: Props) {
                 <div
                   className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-6 max-w-[min(640px,90vw)]`}
                   style={{
-                    backdropFilter: "blur(60px) saturate(170%)",
-                    WebkitBackdropFilter: "blur(60px) saturate(170%)",
-                    background: "rgba(20,18,16,0.42)",
+                    backdropFilter: "blur(36px) saturate(150%)",
+                    WebkitBackdropFilter: "blur(36px) saturate(150%)",
+                    background: "rgba(20,18,16,0.58)",
                     border: "1px solid rgba(244,237,224,0.14)",
                     borderRadius: "16px",
                     boxShadow:
