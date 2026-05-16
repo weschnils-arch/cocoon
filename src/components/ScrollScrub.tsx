@@ -198,11 +198,14 @@ export default function ScrollScrub({ totalFrames }: Props) {
       });
     };
 
+    // Mobile gets longer pin length + heavier scrub damping so text doesn't rush through.
+    // (Phones have shorter viewports so the same % gives fewer scroll-pixels per moment.)
+    const isMobile = window.innerWidth < 768;
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.current,
       start: "top top",
-      end: "+=900%",
-      scrub: 1.1,
+      end: () => `+=${window.innerWidth < 768 ? 1500 : 900}%`,
+      scrub: isMobile ? 1.7 : 1.1,
       pin: true,
       anticipatePin: 1,
       invalidateOnRefresh: true,
