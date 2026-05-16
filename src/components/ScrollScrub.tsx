@@ -358,9 +358,9 @@ export default function ScrollScrub({ totalFrames }: Props) {
             <div
               className="mt-7 inline-flex flex-col items-center gap-5"
               style={{
-                backdropFilter: "blur(60px) saturate(170%)",
-                WebkitBackdropFilter: "blur(60px) saturate(170%)",
-                background: "rgba(20,18,16,0.42)",
+                backdropFilter: "blur(24px) saturate(140%)",
+                WebkitBackdropFilter: "blur(24px) saturate(140%)",
+                background: "rgba(20,18,16,0.72)",
                 border: "1px solid rgba(244,237,224,0.14)",
                 borderRadius: "16px",
                 boxShadow:
