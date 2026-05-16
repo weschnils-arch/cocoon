@@ -300,16 +300,26 @@ export default function ScrollScrub({ totalFrames }: Props) {
               className={`absolute inset-0 flex flex-col justify-center ${c.align} px-6 md:px-[8vw] will-change-[opacity,transform]`}
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              <div className={`flex flex-col ${c.align} gap-4 max-w-[min(720px,92vw)]`}>
-                <div className="breathe-line h-[32rem] w-px md:h-[48rem]" aria-hidden />
-                <span className="wordmark text-[11px] text-cream md:text-[12px]">
-                  Cocoon
-                </span>
-                {m.eyebrow && (
-                  <span className="label text-cream/65">{m.eyebrow}</span>
-                )}
+              {/* Glass card is the centered element. Line + wordmark + eyebrow are
+                  absolute above it so they don't push the card off-center. */}
+              <div className="relative inline-flex flex-col items-center max-w-[min(640px,90vw)]">
+                {/* Decorative cluster above the box — does not affect vertical centering */}
+                <div className="pointer-events-none absolute bottom-full left-1/2 mb-5 flex -translate-x-1/2 flex-col items-center gap-3">
+                  <div
+                    className="breathe-line h-32 w-px md:h-48"
+                    aria-hidden
+                  />
+                  <span className="wordmark text-[11px] text-cream md:text-[12px]">
+                    Cocoon
+                  </span>
+                  {m.eyebrow && (
+                    <span className="label text-cream/65">{m.eyebrow}</span>
+                  )}
+                </div>
+
+                {/* The glass card — this is what lands at viewport center */}
                 <div
-                  className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-6 max-w-[min(640px,90vw)]`}
+                  className={`inline-flex flex-col ${c.align === "items-end text-right" ? "items-end" : c.align === "items-start text-left" ? "items-start" : "items-center"} gap-6 w-full`}
                   style={{
                     backdropFilter: "blur(36px) saturate(150%)",
                     WebkitBackdropFilter: "blur(36px) saturate(150%)",
